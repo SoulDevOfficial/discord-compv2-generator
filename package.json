@@ -1,0 +1,24 @@
+{
+  "name": "discord-compv2-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A web-based builder for generating Discord Components V2 JSON (buttons, select menus, modals).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
+    "gh-pages": "^5.0.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.5.2",
+    "@vitejs/plugin-react": "^3.2.0"
+  }
+}
