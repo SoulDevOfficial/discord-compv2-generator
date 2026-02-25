@@ -1,108 +1,224 @@
 import { useState } from "react";
+import ActionRowBuilder from "./components/ActionRowBuilder";
+import SelectMenuBuilder from "./components/SelectMenuBuilder";
+import ModalBuilder from "./components/ModalBuilder";
+import JsonActions from "./components/JsonActions";
 
-interface TextInput {
-  type: 4;
+interface ButtonComponent {
+  type: 2;
+  style: 1 | 2 | 3 | 4 | 5;
+  label?: string;
+  custom_id?: string;
+  url?: string;
+  disabled?: boolean;
+}
+
+interface SelectMenu {
+  type: 3;
   custom_id: string;
-  style: 1 | 2;
-  label: string;
-  min_length?: number;
-  max_length?: number;
-  required?: boolean;
-  value?: string;
+  options: any[];
   placeholder?: string;
+  min_values?: number;
+  max_values?: number;
+  disabled?: boolean;
 }
 
 interface Modal {
   type: 9;
   custom_id: string;
   title: string;
-  components: { type: 1; components: TextInput[] }[];
+  components: any[];
 }
 
-interface Props {
-  onChange: (modal: Modal) => void;
-}
+type ComponentRow = { type: 1; components: (ButtonComponent | SelectMenu)[] };
 
-export default function ModalBuilder({ onChange }: Props) {
-  const [customId, setCustomId] = useState("");
-  const [title, setTitle] = useState("");
-  const [inputs, setInputs] = useState<TextInput[]>([]);
+export default function App() {
+  const [rows, setRows] = useState<ComponentRow[]>([]);
+  const [selectMenus, setSelectMenus] = useState<SelectMenu[]>([]);
+  const [modals, setModals] = useState<Modal[]>([]);
 
-  const addInput = () => {
-    setInputs([
-      ...inputs,
-      { type: 4, custom_id: `input_${inputs.length + 1}`, style: 1, label: "Input" },
-    ]);
-  };
-
-  const updateInput = (index: number, key: keyof TextInput, value: any) => {
-    const newInputs = [...inputs];
-    newInputs[index][key] = value;
-    setInputs(newInputs);
-  };
-
-  const modal: Modal = {
-    type: 9,
-    custom_id: customId,
-    title,
-    components: inputs.map((input) => ({ type: 1, components: [input] })),
-  };
-
-  onChange(modal);
+  const addRow = () => setRows([...rows, { type: 1, components: [] }]);
+  const removeRow = (idx: number) => setRows(rows.filter((_, i) => i !== idx));
+  const removeSelectMenu = (idx: number) => setSelectMenus(selectMenus.filter((_, i) => i !== idx));
+  const removeModal = (idx: number) => setModals(modals.filter((_, i) => i !== idx));
 
   return (
-    <div style={{ border: "1px solid #30363d", padding: 12, borderRadius: 6, marginBottom: 12 }}>
-      <h4>Modal</h4>
-      <div>
-        <label>Custom ID</label>
-        <input
-          value={customId}
-          onChange={(e) => setCustomId(e.target.value)}
-          style={{ width: "100%", marginBottom: 6 }}
-        />
-      </div>
-      <div>
-        <label>Title</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ width: "100%", marginBottom: 6 }}
-        />
-      </div>
+    <div style={{ padding: 24, fontFamily: "sans-serif" }}>
+      <h1>Discord Components V2 Builder</h1>
 
-      {inputs.map((input, idx) => (
-        <div key={idx} style={{ border: "1px solid #444", padding: 6, borderRadius: 6, marginBottom: 6 }}>
-          <label>Label</label>
-          <input
-            value={input.label}
-            onChange={(e) => updateInput(idx, "label", e.target.value)}
-            style={{ width: "100%", marginBottom: 4 }}
-          />
-          <label>Custom ID</label>
-          <input
-            value={input.custom_id}
-            onChange={(e) => updateInput(idx, "custom_id", e.target.value)}
-            style={{ width: "100%", marginBottom: 4 }}
+      <div style={{ display: "flex", gap: 40, marginTop: 20 }}>
+        <div style={{ flex: 1 }}>
+          <h3>Action Rows</h3>
+          {rows.map((row, idx) => (
+            <div key={idx} style={{ position: "relative" }}>
+              <ActionRowBuilder
+                onChange={(updatedRow) => {
+                  const newRows = [...rows];
+                  newRows[idx] = updatedRow;
+                  setRows(newRows);
+                }}
+              />
+              <button
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  padding: "4px 8px",
+                  borderRadius: 6,
+                  border: "none",
+                  background: "#f04747",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+                onClick={() => removeRow(idx)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          {rows.length < 5 && (
+            <button
+              style={{
+                marginTop: 8,
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "none",
+                background: "#5865f2",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+              onClick={addRow}
+            >
+              + Add Action Row
+            </button>
+          )}
+
+          <h3 style={{ marginTop: 24 }}>Select Menus</h3>
+          {selectMenus.map((menu, idx) => (
+            <div key={idx} style={{ position: "relative" }}>
+              <SelectMenuBuilder
+                onChange={(updatedMenu) => {
+                  const newMenus = [...selectMenus];
+                  newMenus[idx] = updatedMenu;
+                  setSelectMenus(newMenus);
+                }}
+              />
+              <button
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  padding: "4px 8px",
+                  borderRadius: 6,
+                  border: "none",
+                  background: "#f04747",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+                onClick={() => removeSelectMenu(idx)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          {selectMenus.length < 5 && (
+            <button
+              style={{
+                marginTop: 8,
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "none",
+                background: "#5865f2",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+              onClick={() =>
+                setSelectMenus([...selectMenus, { type: 3, custom_id: "", options: [] }])
+              }
+            >
+              + Add Select Menu
+            </button>
+          )}
+
+          <h3 style={{ marginTop: 24 }}>Modals</h3>
+          {modals.map((modal, idx) => (
+            <div key={idx} style={{ position: "relative" }}>
+              <ModalBuilder
+                onChange={(updatedModal) => {
+                  const newModals = [...modals];
+                  newModals[idx] = updatedModal;
+                  setModals(newModals);
+                }}
+              />
+              <button
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  padding: "4px 8px",
+                  borderRadius: 6,
+                  border: "none",
+                  background: "#f04747",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+                onClick={() => removeModal(idx)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          {modals.length < 5 && (
+            <button
+              style={{
+                marginTop: 8,
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "none",
+                background: "#5865f2",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+              onClick={() => setModals([...modals, { type: 9, custom_id: "", title: "", components: [] }])}
+            >
+              + Add Modal
+            </button>
+          )}
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <h3>JSON Output</h3>
+          <pre
+            style={{
+              background: "#111",
+              color: "#0f0",
+              padding: 16,
+              borderRadius: 6,
+              overflow: "auto",
+            }}
+          >
+            {JSON.stringify(
+              [
+                ...rows,
+                ...selectMenus.map((m) => ({ type: 1, components: [m] })),
+                ...modals,
+              ],
+              null,
+              2
+            )}
+          </pre>
+          <JsonActions
+            data={[
+              ...rows,
+              ...selectMenus.map((m) => ({ type: 1, components: [m] })),
+              ...modals,
+            ]}
           />
         </div>
-      ))}
-
-      {inputs.length < 5 && (
-        <button
-          style={{
-            marginTop: 6,
-            padding: "4px 8px",
-            borderRadius: 6,
-            border: "none",
-            background: "#5865f2",
-            color: "#fff",
-            cursor: "pointer",
-          }}
-          onClick={addInput}
-        >
-          + Add Input
-        </button>
-      )}
+      </div>
     </div>
   );
 }
