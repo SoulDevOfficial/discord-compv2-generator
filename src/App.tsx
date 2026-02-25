@@ -1,8 +1,10 @@
 import { useState } from "react";
 import ActionRowBuilder from "./components/ActionRowBuilder";
-import SelectMenuBuilder from "./components/SelectBuilder";
+import SelectBuilder from "./components/SelectBuilder";
 import ModalBuilder from "./components/ModalBuilder";
 import JsonActions from "./components/JsonActions";
+import { generateComponentJSON } from "./utils/jsonGenerator";
+import { validateButtons, validateSelectMenu, validateModal } from "./utils/validators";
 
 interface ButtonComponent {
   type: 2;
@@ -42,6 +44,35 @@ export default function App() {
   const removeSelectMenu = (idx: number) => setSelectMenus(selectMenus.filter((_, i) => i !== idx));
   const removeModal = (idx: number) => setModals(modals.filter((_, i) => i !== idx));
 
+  const handleAddSelectMenu = () => {
+    setSelectMenus([...selectMenus, { type: 3, custom_id: "", options: [] }]);
+  };
+
+  const handleAddModal = () => {
+    setModals([...modals, { type: 9, custom_id: "", title: "", components: [] }]);
+  };
+
+  const handleUpdateRow = (updatedRow: ComponentRow, idx: number) => {
+    const newRows = [...rows];
+    newRows[idx] = updatedRow;
+    setRows(newRows);
+  };
+
+  const handleUpdateSelectMenu = (updatedMenu: SelectMenu, idx: number) => {
+    const newMenus = [...selectMenus];
+    newMenus[idx] = updatedMenu;
+    setSelectMenus(newMenus);
+  };
+
+  const handleUpdateModal = (updatedModal: Modal, idx: number) => {
+    const newModals = [...modals];
+    newModals[idx] = updatedModal;
+    setModals(newModals);
+  };
+
+  // Generate JSON with all the components (buttons, select menus, modals)
+  const jsonOutput = generateComponentJSON(rows, selectMenus, modals);
+
   return (
     <div style={{ padding: 24, fontFamily: "sans-serif" }}>
       <h1>Discord Components V2 Builder</h1>
@@ -51,13 +82,7 @@ export default function App() {
           <h3>Action Rows</h3>
           {rows.map((row, idx) => (
             <div key={idx} style={{ position: "relative" }}>
-              <ActionRowBuilder
-                onChange={(updatedRow) => {
-                  const newRows = [...rows];
-                  newRows[idx] = updatedRow;
-                  setRows(newRows);
-                }}
-              />
+              <ActionRowBuilder onChange={(updatedRow) => handleUpdateRow(updatedRow, idx)} />
               <button
                 style={{
                   position: "absolute",
@@ -97,13 +122,7 @@ export default function App() {
           <h3 style={{ marginTop: 24 }}>Select Menus</h3>
           {selectMenus.map((menu, idx) => (
             <div key={idx} style={{ position: "relative" }}>
-              <SelectMenuBuilder
-                onChange={(updatedMenu) => {
-                  const newMenus = [...selectMenus];
-                  newMenus[idx] = updatedMenu;
-                  setSelectMenus(newMenus);
-                }}
-              />
+              <SelectBuilder onChange={(updatedMenu) => handleUpdateSelectMenu(updatedMenu, idx)} />
               <button
                 style={{
                   position: "absolute",
@@ -134,9 +153,7 @@ export default function App() {
                 color: "#fff",
                 cursor: "pointer",
               }}
-              onClick={() =>
-                setSelectMenus([...selectMenus, { type: 3, custom_id: "", options: [] }])
-              }
+              onClick={handleAddSelectMenu}
             >
               + Add Select Menu
             </button>
@@ -145,13 +162,7 @@ export default function App() {
           <h3 style={{ marginTop: 24 }}>Modals</h3>
           {modals.map((modal, idx) => (
             <div key={idx} style={{ position: "relative" }}>
-              <ModalBuilder
-                onChange={(updatedModal) => {
-                  const newModals = [...modals];
-                  newModals[idx] = updatedModal;
-                  setModals(newModals);
-                }}
-              />
+              <ModalBuilder onChange={(updatedModal) => handleUpdateModal(updatedModal, idx)} />
               <button
                 style={{
                   position: "absolute",
@@ -182,7 +193,7 @@ export default function App() {
                 color: "#fff",
                 cursor: "pointer",
               }}
-              onClick={() => setModals([...modals, { type: 9, custom_id: "", title: "", components: [] }])}
+              onClick={handleAddModal}
             >
               + Add Modal
             </button>
@@ -200,23 +211,9 @@ export default function App() {
               overflow: "auto",
             }}
           >
-            {JSON.stringify(
-              [
-                ...rows,
-                ...selectMenus.map((m) => ({ type: 1, components: [m] })),
-                ...modals,
-              ],
-              null,
-              2
-            )}
+            {JSON.stringify(jsonOutput, null, 2)}
           </pre>
-          <JsonActions
-            data={[
-              ...rows,
-              ...selectMenus.map((m) => ({ type: 1, components: [m] })),
-              ...modals,
-            ]}
-          />
+          <JsonActions data={jsonOutput} />
         </div>
       </div>
     </div>
