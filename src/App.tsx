@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ActionRowBuilder from "./components/ActionRowBuilder";
+import SelectMenuBuilder from "./components/SelectMenuBuilder";
 import JsonActions from "./components/JsonActions";
 
 interface ButtonComponent {
@@ -11,13 +12,21 @@ interface ButtonComponent {
   disabled?: boolean;
 }
 
-interface ActionRow {
-  type: 1;
-  components: ButtonComponent[];
+interface SelectMenu {
+  type: 3;
+  custom_id: string;
+  options: any[];
+  placeholder?: string;
+  min_values?: number;
+  max_values?: number;
+  disabled?: boolean;
 }
 
+type ComponentRow = { type: 1; components: (ButtonComponent | SelectMenu)[] };
+
 export default function App() {
-  const [rows, setRows] = useState<ActionRow[]>([]);
+  const [rows, setRows] = useState<ComponentRow[]>([]);
+  const [selectMenus, setSelectMenus] = useState<SelectMenu[]>([]);
 
   const addRow = () => setRows([...rows, { type: 1, components: [] }]);
 
@@ -52,6 +61,37 @@ export default function App() {
           >
             + Add Action Row
           </button>
+
+          <h3 style={{ marginTop: 24 }}>Select Menus</h3>
+          {selectMenus.map((menu, idx) => (
+            <SelectMenuBuilder
+              key={idx}
+              onChange={(updatedMenu) => {
+                const newMenus = [...selectMenus];
+                newMenus[idx] = updatedMenu;
+                setSelectMenus(newMenus);
+              }}
+            />
+          ))}
+
+          {selectMenus.length < 5 && (
+            <button
+              style={{
+                marginTop: 8,
+                padding: "6px 12px",
+                borderRadius: 6,
+                border: "none",
+                background: "#5865f2",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+              onClick={() =>
+                setSelectMenus([...selectMenus, { type: 3, custom_id: "", options: [] }])
+              }
+            >
+              + Add Select Menu
+            </button>
+          )}
         </div>
 
         <div style={{ flex: 1 }}>
@@ -65,9 +105,11 @@ export default function App() {
               overflow: "auto",
             }}
           >
-            {JSON.stringify(rows, null, 2)}
+            {JSON.stringify([...rows, ...selectMenus.map((m) => ({ type: 1, components: [m] }))], null, 2)}
           </pre>
-          <JsonActions data={rows} />
+          <JsonActions
+            data={[...rows, ...selectMenus.map((m) => ({ type: 1, components: [m] }))]}
+          />
         </div>
       </div>
     </div>
