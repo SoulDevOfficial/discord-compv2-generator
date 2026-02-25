@@ -1,10 +1,10 @@
 import { useState } from "react";
-
-type ButtonStyle = 1 | 2 | 3 | 4 | 5;
+import ActionRowBuilder from "./components/ActionRowBuilder";
+import JsonActions from "./components/JsonActions";
 
 interface ButtonComponent {
   type: 2;
-  style: ButtonStyle;
+  style: 1 | 2 | 3 | 4 | 5;
   label?: string;
   custom_id?: string;
   url?: string;
@@ -16,83 +16,42 @@ interface ActionRow {
   components: ButtonComponent[];
 }
 
-const styleMap: Record<string, ButtonStyle> = {
-  Primary: 1,
-  Secondary: 2,
-  Success: 3,
-  Danger: 4,
-  Link: 5,
-};
-
 export default function App() {
-  const [label, setLabel] = useState("");
-  const [customId, setCustomId] = useState("");
-  const [style, setStyle] = useState<ButtonStyle>(1);
-  const [disabled, setDisabled] = useState(false);
+  const [rows, setRows] = useState<ActionRow[]>([]);
 
-  const button: ButtonComponent = {
-    type: 2,
-    style,
-    label: label || undefined,
-    custom_id: style !== 5 ? customId || undefined : undefined,
-    url: style === 5 ? customId || undefined : undefined,
-    disabled,
-  };
-
-  const actionRow: ActionRow = {
-    type: 1,
-    components: [button],
-  };
+  const addRow = () => setRows([...rows, { type: 1, components: [] }]);
 
   return (
     <div style={{ padding: 24, fontFamily: "sans-serif" }}>
       <h1>Discord Components V2 Builder</h1>
 
       <div style={{ display: "flex", gap: 40, marginTop: 20 }}>
-        <div style={{ minWidth: 300 }}>
-          <div>
-            <label>Label</label>
-            <input
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              style={{ width: "100%", marginBottom: 10 }}
+        <div style={{ flex: 1 }}>
+          {rows.map((row, idx) => (
+            <ActionRowBuilder
+              key={idx}
+              onChange={(updatedRow) => {
+                const newRows = [...rows];
+                newRows[idx] = updatedRow;
+                setRows(newRows);
+              }}
             />
-          </div>
+          ))}
 
-          <div>
-            <label>Style</label>
-            <select
-              value={style}
-              onChange={(e) => setStyle(Number(e.target.value) as ButtonStyle)}
-              style={{ width: "100%", marginBottom: 10 }}
-            >
-              {Object.entries(styleMap).map(([name, value]) => (
-                <option key={name} value={value}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label>{style === 5 ? "URL" : "Custom ID"}</label>
-            <input
-              value={customId}
-              onChange={(e) => setCustomId(e.target.value)}
-              style={{ width: "100%", marginBottom: 10 }}
-            />
-          </div>
-
-          <div>
-            <label>
-              <input
-                type="checkbox"
-                checked={disabled}
-                onChange={(e) => setDisabled(e.target.checked)}
-              />
-              Disabled
-            </label>
-          </div>
+          <button
+            style={{
+              marginTop: 12,
+              padding: "8px 16px",
+              borderRadius: 6,
+              border: "none",
+              background: "#5865f2",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+            onClick={addRow}
+          >
+            + Add Action Row
+          </button>
         </div>
 
         <div style={{ flex: 1 }}>
@@ -106,8 +65,9 @@ export default function App() {
               overflow: "auto",
             }}
           >
-            {JSON.stringify(actionRow, null, 2)}
+            {JSON.stringify(rows, null, 2)}
           </pre>
+          <JsonActions data={rows} />
         </div>
       </div>
     </div>
