@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ActionRowBuilder from "./components/ActionRowBuilder";
-import SelectMenuBuilder from "./components/SelectMenuBuilder";
+import SelectMenuBuilder from "./components/SelectBuilder";
 import ModalBuilder from "./components/ModalBuilder";
 import JsonActions from "./components/JsonActions";
 
