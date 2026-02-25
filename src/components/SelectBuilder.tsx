@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SelectOption {
   label: string;
@@ -21,7 +21,7 @@ interface Props {
   onChange: (menu: SelectMenu) => void;
 }
 
-export default function SelectMenuBuilder({ onChange }: Props) {
+export default function SelectBuilder({ onChange }: Props) {
   const [customId, setCustomId] = useState("");
   const [placeholder, setPlaceholder] = useState("");
   const [minValues, setMinValues] = useState(1);
@@ -39,17 +39,18 @@ export default function SelectMenuBuilder({ onChange }: Props) {
     setOptions(newOptions);
   };
 
-  const menu: SelectMenu = {
-    type: 3,
-    custom_id: customId,
-    placeholder: placeholder || undefined,
-    min_values: minValues,
-    max_values: maxValues,
-    disabled,
-    options,
-  };
-
-  onChange(menu);
+  // Call onChange whenever any relevant state changes
+  useEffect(() => {
+    onChange({
+      type: 3,
+      custom_id: customId,
+      placeholder: placeholder || undefined,
+      min_values: minValues,
+      max_values: maxValues,
+      disabled,
+      options,
+    });
+  }, [customId, placeholder, minValues, maxValues, disabled, options]);
 
   return (
     <div style={{ border: "1px solid #30363d", padding: 12, borderRadius: 6, marginBottom: 12 }}>
